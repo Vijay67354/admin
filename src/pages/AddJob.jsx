@@ -69,15 +69,18 @@ const handleSubmit = async (e) => {
   setError('');
 
   try {
-    const token = localStorage.getItem('authToken');
-    const response = await axios.post('http://localhost:5006/api/jobs', {
+    // const token = localStorage.getItem('authToken');
+ const response = await axios.get(REACT_APP_JOB_API_URL_SHY, {
       ...jobData,
       postedBy: user._id,
-    }, {
-      headers: {
-        Authorization: `Bearer ${token}`,
-      },
-    });
+    }
+    // {
+    //   headers: {
+    //     Authorization: `Bearer ${token}`,
+    //   },
+    // }
+  
+  );
 
     navigate('/dashboard', { replace: true });
   } catch (err) {

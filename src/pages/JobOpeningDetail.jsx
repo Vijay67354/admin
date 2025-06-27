@@ -1,19 +1,18 @@
-
-
 import React, { useState } from 'react';
 import { useLocation, useNavigate, Link } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
 import { ToastContainer, toast } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
+import axios from 'axios';
 
 const JobOpeningDetail = () => {
   const { state } = useLocation();
   const navigate = useNavigate();
 
-  // Job data to match the first image exactly
+  // Job data with valid ObjectId-like _id values
   const initialJobs = [
     {
-      _id: '1',
+      _id: '507f1f77bcf86cd799439011', // Example valid ObjectId
       title: 'home',
       company: 'home',
       location: 'home',
@@ -43,11 +42,8 @@ const JobOpeningDetail = () => {
     salary: 0,
     workMode: { home: false, office: false, field: false },
   });
-  const [showMobilePopup, setShowMobilePopup] = useState(false);
-  const [mobileNumber, setMobileNumber] = useState('');
-  const [showOtpPopup, setShowOtpPopup] = useState(false);
-  const [otp, setOtp] = useState('');
-  const [otpError, setOtpError] = useState(null);
+  const [showEmailPopup, setShowEmailPopup] = useState(false);
+  const [email, setEmail] = useState('');
   const [currentJobId, setCurrentJobId] = useState(null);
 
   const handleFilterChange = (filterType, value) => {
@@ -88,49 +84,66 @@ const JobOpeningDetail = () => {
 
   const handleApplyJob = (jobId) => {
     setCurrentJobId(jobId);
-    setShowMobilePopup(true);
+    setShowEmailPopup(true);
   };
 
-  const simulateSendOtp = () => {
-    // Simulate sending OTP (no API call, static behavior)
-    setShowOtpPopup(true);
-    toast.info('OTP sent to your mobile number! (Simulated)');
-  };
+  const sendEmail = async (jobDetails) => {
+    try {
+      const emailData = {
+        email,
+        jobDetails: {
+          title: jobDetails.title || 'Unknown',
+          company: jobDetails.company || 'Unknown',
+          location: jobDetails.location || 'Unknown',
+          salary: jobDetails.salary || 'N/A',
+          type: jobDetails.type || 'N/A',
+          workType: jobDetails.workType || 'N/A',
+          experience: jobDetails.experience || 'N/A',
+          skills: jobDetails.skills || [],
+          description: jobDetails.description || 'No description available',
+          responsibilities: jobDetails.responsibilities || 'No responsibilities listed',
+          requirements: jobDetails.requirements || [],
+          openings: jobDetails.openings || 'N/A',
+          postedAt: jobDetails.postedAt || new Date().toISOString(),
+        },
+      };
 
-  const simulateVerifyOtp = () => {
-    // Simulate OTP verification (assume any 4-digit OTP is valid for static data)
-    if (otp.length === 4 && /^\d+$/.test(otp)) {
-      // Update applicants count locally
+      await axios.post(REACT_APP_SEND_EMAIL, emailData);
+      toast.success('Email sent successfully! You can now apply.');
+      setShowEmailPopup(false);
+
+      await axios.post(
+        `http://localhost:5006/api/jobs/${jobDetails._id}/apply`,
+        {},
+        { headers: { Authorization: `Bearer ${localStorage.getItem('token') || ''}` } }
+      );
+
+      toast.success('Applied successfully!');
+
       setJobs((prevJobs) =>
         prevJobs.map((job) =>
-          job._id === currentJobId ? { ...job, applicants: (job.applicants || 0) + 1 } : job
+          job._id === jobDetails._id ? { ...job, applicants: (job.applicants || 0) + 1 } : job
         )
       );
-      setSelectedJob((prev) =>
-        prev && prev._id === currentJobId ? { ...prev, applicants: (prev.applicants || 0) + 1 } : prev
-      );
-
-      toast.success('Application submitted successfully! (Simulated)');
-      setShowOtpPopup(false);
-      setOtp('');
-      setMobileNumber('');
-      setCurrentJobId(null);
 
       setTimeout(() => {
         navigate('/');
       }, 1500);
-    } else {
-      setOtpError('Please enter a valid 4-digit OTP.');
+    } catch (err) {
+      console.error('Error sending email:', err.response ? err.response.data : err.message);
+      toast.error('Failed to send email. Please try again.');
     }
   };
 
-  const handleMobileNext = () => {
-    if (!mobileNumber || mobileNumber.length !== 10 || !/^\d+$/.test(mobileNumber)) {
-      toast.error('Please enter a valid 10-digit mobile number.');
+  const handleEmailNext = async () => {
+    if (!email || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
+      toast.error('Please enter a valid email address.');
       return;
     }
-    setShowMobilePopup(false);
-    simulateSendOtp();
+    const jobDetails = jobs.find((job) => job._id === currentJobId);
+    if (jobDetails) {
+      await sendEmail(jobDetails);
+    }
   };
 
   const closePopup = () => {
@@ -457,15 +470,15 @@ const JobOpeningDetail = () => {
         )}
       </AnimatePresence>
 
-      {/* Mobile Number Popup */}
+      {/* Email Popup */}
       <AnimatePresence>
-        {showMobilePopup && (
+        {showEmailPopup && (
           <motion.div
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
             className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50"
-            onClick={() => setShowMobilePopup(false)}
+            onClick={() => setShowEmailPopup(false)}
           >
             <motion.div
               initial={{ y: 50, opacity: 0 }}
@@ -476,11 +489,11 @@ const JobOpeningDetail = () => {
               onClick={(e) => e.stopPropagation()}
             >
               <div className="flex justify-between items-center mb-4">
-                <h2 className="text-xl font-semibold text-gray-800">Enter your mobile number</h2>
+                <h2 className="text-xl font-semibold text-gray-800">Enter your email address</h2>
                 <button
                   className="text-gray-500 hover:text-gray-700"
-                  onClick={() => setShowMobilePopup(false)}
-                  aria-label="Close mobile number popup"
+                  onClick={() => setShowEmailPopup(false)}
+                  aria-label="Close email popup"
                 >
                   <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M6 18L18 6M6 6l12 12" />
@@ -489,14 +502,12 @@ const JobOpeningDetail = () => {
               </div>
 
               <div className="flex items-center mb-4">
-                <span className="text-gray-600 mr-2">+91</span>
                 <input
-                  type="text"
-                  value={mobileNumber}
-                  onChange={(e) => setMobileNumber(e.target.value)}
-                  placeholder="Eg: 9876543210"
+                  type="email"
+                  value={email}
+                  onChange={(e) => setEmail(e.target.value)}
+                  placeholder="Enter your email"
                   className="w-full p-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-green-600"
-                  maxLength="10"
                 />
               </div>
 
@@ -506,74 +517,13 @@ const JobOpeningDetail = () => {
                 <a href="#" className="text-green-600 hover:underline">Privacy Policy</a>
               </p>
 
-              <button
-                onClick={handleMobileNext}
-                className="bg-gray-200 w-full text-gray-800 font-semibold py-2 px-4 rounded-lg hover:bg-gray-300"
-                aria-label="Next"
-              >
-                NEXT
-              </button>
-            </motion.div>
-          </motion.div>
-        )}
-      </AnimatePresence>
-
-      {/* OTP Popup */}
-      <AnimatePresence>
-        {showOtpPopup && (
-          <motion.div
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            exit={{ opacity: 0 }}
-            className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50"
-            onClick={() => setShowOtpPopup(false)}
-          >
-            <motion.div
-              initial={{ y: 50, opacity: 0 }}
-              animate={{ y: 0, opacity: 1 }}
-              exit={{ y: 50, opacity: 0 }}
-              transition={{ duration: 0.3 }}
-              className="bg-white p-6 rounded-lg shadow-lg w-96"
-              onClick={(e) => e.stopPropagation()}
-            >
-              <div className="flex justify-between items-center mb-4">
-                <h2 className="text-xl font-semibold text-gray-800">Enter OTP</h2>
-                <button
-                  className="text-gray-500 hover:text-gray-700"
-                  onClick={() => setShowOtpPopup(false)}
-                  aria-label="Close OTP popup"
-                >
-                  <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M6 18L18 6M6 6l12 12" />
-                  </svg>
-                </button>
-              </div>
-
-              <p className="text-gray-600 mb-4">An OTP has been sent to +91{mobileNumber}</p>
-
-              <input
-                type="text"
-                value={otp}
-                onChange={(e) => {
-                  setOtp(e.target.value);
-                  setOtpError(null);
-                }}
-                placeholder="Enter 4-digit OTP"
-                className="w-full p-2 border border-gray-300 rounded-lg mb-4 focus:outline-none focus:ring-2 focus:ring-green-600"
-                maxLength="4"
-              />
-
-              {otpError && (
-                <p className="text-red-600 text-sm mb-4">{otpError}</p>
-              )}
-
-              <button
-                onClick={simulateVerifyOtp}
-                className="bg-green-600 w-full text-white font-semibold py-2 px-4 rounded-lg hover:bg-green-700"
-                aria-label="Verify OTP"
-              >
-                Verify OTP
-              </button>
+    <button
+  onClick={handleEmailNext}
+  className="bg-gray-200 hover:text-white hover:bg-green-700 active:text-white active:bg-green-800 w-full text-gray-800 font-semibold py-2 px-4 rounded-lg"
+  aria-label="Submit"
+>
+  Submit
+</button>
             </motion.div>
           </motion.div>
         )}

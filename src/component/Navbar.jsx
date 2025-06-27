@@ -114,28 +114,17 @@ const Navbar = () => {
 
           {/* Desktop Navigation */}
           <div className="hidden md:flex items-baseline space-x-4">
-            {/* Add your Jobs, Job Prep, Contests, Degree, Resume Tools links here */}
-            {/* <Link to="/jobs" className="text-gray-700 hover:text-teal-600 px-3 py-2 rounded-md text-sm font-medium">
-                Jobs
-              </Link>
-              <Link to="/job-prep" className="text-gray-700 hover:text-teal-600 px-3 py-2 rounded-md text-sm font-medium">
-                Job Prep
-              </Link>
-              <Link to="/contests" className="text-gray-700 hover:text-teal-600 px-3 py-2 rounded-md text-sm font-medium">
-                Contests
-              </Link>
-              <Link to="/degree" className="text-gray-700 hover:text-teal-600 px-3 py-2 rounded-md text-sm font-medium">
-                Degree
-              </Link>
-              <Link to="/resume-tools" className="text-gray-700 hover:text-teal-600 px-3 py-2 rounded-md text-sm font-medium">
-                Resume Tools
-              </Link> */}
+         
           </div>
-          <div>
-            <Link to="/candidatelogin" className="text-[#1f8268] ml-[500px] text-lg font-medium hover:underline">
-              Employer Login
-            </Link>
-          </div>
+       <div>
+  <Link
+    to="/candidatelogin"
+    className="text-[#1f8268] lg:block none ml-[500px] text-lg font-medium hover:underline active:text-green-600 active:font-bold"
+  >
+    Employer Login
+  </Link>
+</div>
+
           {/* Profile and Login - Desktop */}
           <div className="hidden md:flex items-center space-x-4 relative">
             {user ? (
@@ -155,9 +144,6 @@ const Navbar = () => {
                     }
                     alt="Profile"
                   />
-
-
-
                   <span className="text-gray-800 text-lg font-medium">{user.name}</span>
                   <ChevronDown className="h-4 w-4 text-gray-500" />
                 </button>
@@ -200,13 +186,11 @@ const Navbar = () => {
               </div>
             ) : (
               <>
-                {/* <Link to="/candidatelogin" className="text-[#1f8268] text-lg font-medium hover:underline">
-                    Employer Logins
-                  </Link> */}
+     
                 <button
                   ref={loginButtonRef}
                   onClick={() => setShowLogin(true)}
-                  className="bg-[#1f8268] text-white font-medium py-2 px-6 rounded-lg hover:bg-teal-700 transition-colors duration-200"
+                  className="bg-[#1f8268] text-white font-medium lg:py-2 py-1 lg:px-6 px-10 rounded-lg hover:bg-teal-700 transition-colors duration-200"
                 >
                   Candidate Login
                 </button>
@@ -270,50 +254,15 @@ const Navbar = () => {
                     Candidate Login
                   </button>
                   <Link
-                    to="/employerlogin"
-                    className="text-teal-600 font-medium py-2 px-6 hover:underline"
+                      to="/candidatelogin"
+                    className="text-teal-600  font-medium py-2 px-6 hover:underline"
                     onClick={closeMobileMenu}
                   >
                     Employer Login
                   </Link>
                 </div>
               )}
-              {/* Mobile Navigation Links */}
-              <Link
-                to="/jobs"
-                className="block px-3 py-2 rounded-md text-base font-medium text-gray-700 hover:text-teal-600 hover:bg-gray-100"
-                onClick={closeMobileMenu}
-              >
-                Jobs
-              </Link>
-              <Link
-                to="/job-prep"
-                className="block px-3 py-2 rounded-md text-base font-medium text-gray-700 hover:text-teal-600 hover:bg-gray-100"
-                onClick={closeMobileMenu}
-              >
-                Job Prep
-              </Link>
-              <Link
-                to="/contests"
-                className="block px-3 py-2 rounded-md text-base font-medium text-gray-700 hover:text-teal-600 hover:bg-gray-100"
-                onClick={closeMobileMenu}
-              >
-                Contests
-              </Link>
-              <Link
-                to="/degree"
-                className="block px-3 py-2 rounded-md text-base font-medium text-gray-700 hover:text-teal-600 hover:bg-gray-100"
-                onClick={closeMobileMenu}
-              >
-                Degree
-              </Link>
-              <Link
-                to="/resume-tools"
-                className="block px-3 py-2 rounded-md text-base font-medium text-gray-700 hover:text-teal-600 hover:bg-gray-100"
-                onClick={closeMobileMenu}
-              >
-                Resume Tools
-              </Link>
+           
             </div>
           </motion.div>
         )}

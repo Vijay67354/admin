@@ -31,20 +31,14 @@ const JobDetails = () => {
   const [itemsPerPage] = useState(10);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState(null);
-  // State for OTP popup and verification
-  const [showOtpPopup, setShowOtpPopup] = useState(false);
-  const [otp, setOtp] = useState('');
-  const [otpError, setOtpError] = useState(null);
+  const [showEmailPopup, setShowEmailPopup] = useState(false);
+  const [email, setEmail] = useState('');
   const [currentJobId, setCurrentJobId] = useState(null);
-  // State for mobile number popup
-  const [showMobilePopup, setShowMobilePopup] = useState(false);
-  const [mobileNumber, setMobileNumber] = useState('');
-
-  const token = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJlbWFpbCI6ImFkbWluQGV4YW1wbGUuY29tIiwiaWF0IjoxNzQ4ODkwMjYwfQ.fakeToken';
+  const [currentJobDetails, setCurrentJobDetails] = useState(null); // Added to store job details
 
   useEffect(() => {
     let isMounted = true;
-
+const API_URL = import.meta.env.VITE_JOB_API_URL_SHY;
     const fetchJobs = async () => {
       if (!isMounted) return;
       setIsLoading(true);
@@ -60,8 +54,7 @@ const JobDetails = () => {
           level: jobType === 'fresher' ? 'Junior' : undefined,
         };
 
-        const response = await axios.get('http://localhost:5006/api/jobs', {
-          headers: { Authorization: `Bearer ${token}` },
+        const response = await axios.get(`${API_URL}`, {
           params,
         });
 
@@ -108,9 +101,13 @@ const JobDetails = () => {
     if (filters.datePosted === 'last3days' && diffDays > 3) return false;
     if (filters.datePosted === 'last7days' && diffDays > 7) return false;
 
-    const jobSalary = typeof job.salary === 'string'
-      ? parseFloat(job.salary.match(/([\d.]+)/)?.[1]) || 0
-      : job.salary || 0;
+    let jobSalary = 0;
+    if (typeof job.salary === 'string') {
+      const match = job.salary.match(/([\d.]+)/);
+      jobSalary = match ? parseFloat(match[0]) : 0;
+    } else if (typeof job.salary === 'number') {
+      jobSalary = job.salary;
+    }
     if (jobSalary < filters.salary) return false;
 
     if (filters.workMode.home && job.type !== 'Work from home') return false;
@@ -141,119 +138,77 @@ const JobDetails = () => {
     return `${diffDays} day${diffDays !== 1 ? 's' : ''} ago`;
   };
 
- const sendOtp = async (jobId) => {
-  try {
-    const fullMobileNumber = `+91${mobileNumber}`;
-    const response = await axios.post(
-      `https://verify.twilio.com/v2/Services/${process.env.REACT_APP_TWILIO_SERVICE_SID}/Verifications`,
-      {
-        To: fullMobileNumber,
-        Channel: 'sms',
-      },
-      {
-        auth: {
-          username: process.env.REACT_APP_TWILIO_ACCOUNT_SID,
-          password: process.env.REACT_APP_TWILIO_AUTH_TOKEN,
+  const sendEmail = async (jobDetails) => {
+    try {
+      const emailData = {
+        email,
+        jobDetails: {
+          title: jobDetails.title || 'Unknown',
+          company: jobDetails.company || 'Unknown',
+          location: jobDetails.location || 'Unknown',
+          salary: jobDetails.salary || 'N/A',
+          type: jobDetails.type || 'N/A',
+          workType: jobDetails.workType || 'N/A',
+          experience: jobDetails.experience || 'N/A',
+          skills: jobDetails.skills || [],
+          description: jobDetails.description || 'No description available',
+          responsibilities: jobDetails.responsibilities || 'No responsibilities listed',
+          requirements: jobDetails.requirements || [],
+          openings: jobDetails.openings || 'N/A',
+          postedAt: jobDetails.postedAt || new Date().toISOString(),
         },
-        headers: {
-          'Content-Type': 'application/x-www-form-urlencoded',
-        },
-        transformRequest: [(data) => {
-          const params = new URLSearchParams();
-          for (const key in data) {
-            params.append(key, data[key]);
-          }
-          return params;
-        }],
-      }
-    );
+      };
 
-    if (response.data.status === 'pending') {
-      setShowOtpPopup(true);
-      setCurrentJobId(jobId);
-      toast.info('OTP sent to your mobile number!');
-    } else {
-      throw new Error('Failed to send OTP');
-    }
-  } catch (err) {
-    console.error('Error sending OTP:', err);
-    toast.error('Failed to send OTP. Please try again.');
-  }
-};
+      await axios.post('http://localhost:5006/api/send-email', emailData);
+      toast.success('Email sent successfully! You can now apply.');
+      setShowEmailPopup(false);
 
-
- const verifyOtp = async () => {
-  try {
-    const fullMobileNumber = `+91${mobileNumber}`;
-
-    const response = await axios.post(
-      `https://verify.twilio.com/v2/Services/${process.env.REACT_APP_TWILIO_SERVICE_SID}/VerificationCheck`,
-      {
-        To: fullMobileNumber,
-        Code: otp,
-      },
-      {
-       auth: {
-          username: process.env.REACT_APP_TWILIO_ACCOUNT_SID,
-          password: process.env.REACT_APP_TWILIO_AUTH_TOKEN,
-        },
-        headers: {
-          'Content-Type': 'application/x-www-form-urlencoded',
-        },
-        transformRequest: [(data) => {
-          const params = new URLSearchParams();
-          for (const key in data) {
-            params.append(key, data[key]);
-          }
-          return params;
-        }],
-      }
-    );
-
-    if (response.data.status === 'approved') {
       await axios.post(
-        `${process.env.REACT_APP_BACKEND_BASE_URL}/api/jobs/${currentJobId}/apply`,
+        `http://localhost:5006/api/jobs/${jobDetails._id}/apply`,
         {},
-        { headers: { Authorization: `Bearer ${token}` } }
+        { headers: { Authorization: `Bearer ${localStorage.getItem('token') || ''}` } }
       );
 
       toast.success('Applied successfully!');
+
       setJobs((prevJobs) =>
         prevJobs.map((job) =>
-          job._id === currentJobId ? { ...job, applicants: (job.applicants || 0) + 1 } : job
+          job._id === jobDetails._id ? { ...job, applicants: (job.applicants || 0) + 1 } : job
         )
       );
-
-      setShowOtpPopup(false);
-      setOtp('');
-      setMobileNumber('');
-      setCurrentJobId(null);
 
       setTimeout(() => {
         navigate('/');
       }, 1500);
-    } else {
-      setOtpError('Invalid OTP. Please try again.');
+    } catch (err) {
+      console.error('Error sending email:', err.response ? err.response.data : err.message);
+      toast.error('Failed to send email. Please try again.');
     }
-  } catch (err) {
-    console.error('Error verifying OTP:', err);
-    setOtpError('Failed to verify OTP. Please try again.');
-  }
-};
-
-
-  const handleApplyJob = (jobId) => {
-    setCurrentJobId(jobId);
-    setShowMobilePopup(true); // Show mobile number popup first
   };
 
-  const handleMobileNext = () => {
-    if (!mobileNumber || mobileNumber.length !== 10 || !/^\d+$/.test(mobileNumber)) {
-      toast.error('Please enter a valid 10-digit mobile number.');
+  const handleApplyJob = (jobId) => {
+    const jobDetails = jobs.find((job) => job._id === jobId);
+    if (!jobDetails) {
+      console.error('Job not found for ID:', jobId);
+      toast.error('Job details not found. Please try again.');
       return;
     }
-    setShowMobilePopup(false);
-    sendOtp(currentJobId); // Proceed to OTP flow
+    setCurrentJobId(jobId);
+    setCurrentJobDetails(jobDetails);
+    setShowEmailPopup(true);
+  };
+
+  const handleEmailNext = () => {
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    if (!email || !emailRegex.test(email)) {
+      toast.error('Please enter a valid email address.');
+      return;
+    }
+    if (!currentJobDetails) {
+      toast.error('Job details not available. Please try again.');
+      return;
+    }
+    sendEmail(currentJobDetails);
   };
 
   if (isLoading) {
@@ -283,13 +238,17 @@ const JobDetails = () => {
   return (
     <div className="w-full mx-auto max-w-[1250px] p-4">
       <Link to="/">
-        <img src='/images/right-arrow.png' className='w-4 h-4 mt-4 mb-3 rotate-[90deg]' />
+        <img src="/images/right-arrow.png" className="w-4 h-4 mt-4 mb-3 rotate-[90deg]" alt="Back to home" />
       </Link>
 
       <div>
         <h1 className="text-2xl font-bold text-gray-800">
           {filteredJobsWithFilters.length}{' '}
-          {jobType === 'fresher' ? 'Fresher Jobs' : jobType === 'workFromHome' ? 'Work from Home Jobs' : 'Latest Jobs'}
+          {jobType === 'fresher'
+            ? 'Fresher Jobs'
+            : jobType === 'workFromHome'
+            ? 'Work from Home Jobs'
+            : 'Latest Jobs'}
         </h1>
       </div>
 
@@ -308,8 +267,18 @@ const JobDetails = () => {
               }
               aria-label="Clear all filters"
             >
-              <svg className="w-5 h-5 text-gray-500 hover:text-gray-700" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M6 18L18 6M6 6l12 12" />
+              <svg
+                className="w-5 h-5 text-gray-500 hover:text-gray-700"
+                fill="none"
+                stroke="currentColor"
+                viewBox="0 0 24 24"
+              >
+                <path
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  strokeWidth="2"
+                  d="M6 18L18 6M6 6l12 12"
+                />
               </svg>
             </button>
           </div>
@@ -432,7 +401,12 @@ const JobDetails = () => {
 
                     <div className="mt-2 flex items-center gap-2 text-sm text-gray-600">
                       <span className="flex items-center gap-1">
-                        <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <svg
+                          className="w-4 h-4"
+                          fill="none"
+                          stroke="currentColor"
+                          viewBox="0 0 24 24"
+                        >
                           <path
                             strokeLinecap="round"
                             strokeLinejoin="round"
@@ -444,7 +418,12 @@ const JobDetails = () => {
                       </span>
                       <span>₹{job.salary || 'N/A'} Lakhs P.A.</span>
                       <span className="flex items-center gap-1">
-                        <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <svg
+                          className="w-4 h-4"
+                          fill="none"
+                          stroke="currentColor"
+                          viewBox="0 0 24 24"
+                        >
                           <path
                             strokeLinecap="round"
                             strokeLinejoin="round"
@@ -477,7 +456,9 @@ const JobDetails = () => {
                     onClick={() => handlePageChange(currentPage - 1)}
                     disabled={currentPage === 1}
                     className={`px-3 py-1 rounded-md ${
-                      currentPage === 1 ? 'bg-gray-200 text-gray-400 cursor-not-allowed' : 'bg-blue-600 text-white hover:bg-blue-700'
+                      currentPage === 1
+                        ? 'bg-gray-200 text-gray-400 cursor-not-allowed'
+                        : 'bg-blue-600 text-white hover:bg-blue-700'
                     }`}
                     aria-label="Previous page"
                   >
@@ -490,12 +471,17 @@ const JobDetails = () => {
                     const endPage = Math.min(totalPages, startPage + maxPagesToShow - 1);
                     const adjustedStartPage = Math.max(1, endPage - maxPagesToShow + 1);
 
-                    return Array.from({ length: endPage - adjustedStartPage + 1 }, (_, index) => adjustedStartPage + index).map((page) => (
+                    return Array.from(
+                      { length: endPage - adjustedStartPage + 1 },
+                      (_, index) => adjustedStartPage + index
+                    ).map((page) => (
                       <button
                         key={page}
                         onClick={() => handlePageChange(page)}
                         className={`px-3 py-1 rounded-md ${
-                          currentPage === page ? 'bg-blue-600 text-white' : 'bg-gray-200 text-gray-700 hover:bg-gray-300'
+                          currentPage === page
+                            ? 'bg-blue-600 text-white'
+                            : 'bg-gray-200 text-gray-700 hover:bg-gray-300'
                         }`}
                         aria-label={`Page ${page}`}
                       >
@@ -525,7 +511,8 @@ const JobDetails = () => {
         <div className="w-1/4">
           <div className="bg-white p-4 rounded-lg shadow-md mb-4">
             <h3 className="text-lg font-semibold text-gray-800 mb-4">
-              Know more about {jobType === 'fresher' ? 'Fresher Jobs' : 'Work from Home Jobs'}
+              Know more about{' '}
+              {jobType === 'fresher' ? 'Fresher Jobs' : 'Work from Home Jobs'}
             </h3>
             <img
               src={
@@ -568,7 +555,12 @@ const JobDetails = () => {
                   <p className="text-gray-600">{selectedJob.company || 'N/A'}</p>
                   <div className="flex items-center gap-2 text-gray-500 text-sm">
                     <span className="flex items-center gap-1">
-                      <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <svg
+                        className="w-4 h-4"
+                        fill="none"
+                        stroke="currentColor"
+                        viewBox="0 0 24 24"
+                      >
                         <path
                           strokeLinecap="round"
                           strokeLinejoin="round"
@@ -578,7 +570,13 @@ const JobDetails = () => {
                       </svg>
                       {selectedJob.location || 'N/A'}
                     </span>
-                    <span>₹{selectedJob.salary || 'N/A'} Lakhs P.A.</span>
+                    <span>
+                      ₹
+                      {(typeof selectedJob.salary === 'string' || typeof selectedJob.salary === 'number'
+                        ? selectedJob.salary
+                        : 'N/A')}
+                      Lakhs P.A.
+                    </span>
                   </div>
                 </div>
                 <button
@@ -586,8 +584,18 @@ const JobDetails = () => {
                   onClick={() => setSelectedJob(null)}
                   aria-label="Close job details"
                 >
-                  <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M6 18L18 6M6 6l12 12" />
+                  <svg
+                    className="w-5 h-5"
+                    fill="none"
+                    stroke="currentColor"
+                    viewBox="0 0 24 24"
+                  >
+                    <path
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                      strokeWidth="2"
+                      d="M6 18L18 6M6 6l12 12"
+                    />
                   </svg>
                 </button>
               </div>
@@ -596,12 +604,22 @@ const JobDetails = () => {
                 <div className="flex justify-between mb-2">
                   <div>
                     <p className="text-gray-600 text-sm">Fixed</p>
-                    <p className="font-semibold">₹{selectedJob.salary || 'N/A'} Lakhs P.A.</p>
+                    <p className="font-semibold">
+                      ₹
+                      {(typeof selectedJob.salary === 'string' || typeof selectedJob.salary === 'number'
+                        ? selectedJob.salary
+                        : 'N/A')}
+                      Lakhs P.A.
+                    </p>
                   </div>
                   <div>
                     <p className="text-gray-600 text-sm">Earning Potential</p>
                     <p className="font-semibold">
-                      ₹{(selectedJob.salary ? parseFloat(selectedJob.salary) + 0.5 : 'N/A')} Lakhs P.A.
+                      ₹
+                      {(typeof selectedJob.salary === 'number'
+                        ? selectedJob.salary + 0.5
+                        : parseFloat(selectedJob.salary) + 0.5 || 'N/A')}
+                      Lakhs P.A.
                     </p>
                   </div>
                 </div>
@@ -637,7 +655,12 @@ const JobDetails = () => {
                 <h3 className="text-lg font-semibold text-gray-800">Job Highlights</h3>
                 <div className="flex gap-4 mt-2">
                   <span className="flex items-center text-orange-600 text-sm">
-                    <svg className="w-5 h-5 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <svg
+                      className="w-5 h-5 mr-1"
+                      fill="none"
+                      stroke="currentColor"
+                      viewBox="0 0 24 24"
+                    >
                       <path
                         strokeLinecap="round"
                         strokeLinejoin="round"
@@ -648,7 +671,12 @@ const JobDetails = () => {
                     {selectedJob?.urgent ? 'Urgently hiring' : 'Hiring'}
                   </span>
                   <span className="flex items-center text-blue-600 text-sm">
-                    <svg className="w-5 h-5 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <svg
+                      className="w-5 h-5 mr-1"
+                      fill="none"
+                      stroke="currentColor"
+                      viewBox="0 0 24 24"
+                    >
                       <path
                         strokeLinecap="round"
                         strokeLinejoin="round"
@@ -702,13 +730,13 @@ const JobDetails = () => {
       </AnimatePresence>
 
       <AnimatePresence>
-        {showOtpPopup && (
+        {showEmailPopup && (
           <motion.div
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
             className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50"
-            onClick={() => setShowOtpPopup(false)}
+            onClick={() => setShowEmailPopup(false)}
           >
             <motion.div
               initial={{ y: 50, opacity: 0 }}
@@ -719,103 +747,55 @@ const JobDetails = () => {
               onClick={(e) => e.stopPropagation()}
             >
               <div className="flex justify-between items-center mb-4">
-                <h2 className="text-xl font-semibold text-gray-800">Enter OTP</h2>
+                <h2 className="text-xl font-semibold text-gray-800">Enter your email address</h2>
                 <button
                   className="text-gray-500 hover:text-gray-700"
-                  onClick={() => setShowOtpPopup(false)}
-                  aria-label="Close OTP popup"
+                  onClick={() => setShowEmailPopup(false)}
+                  aria-label="Close email popup"
                 >
-                  <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M6 18L18 6M6 6l12 12" />
-                  </svg>
-                </button>
-              </div>
-
-              <p className="text-gray-600 mb-4">An OTP has been sent to +91{mobileNumber}</p>
-
-              <input
-                type="text"
-                value={otp}
-                onChange={(e) => {
-                  setOtp(e.target.value);
-                  setOtpError(null);
-                }}
-                placeholder="Enter OTP"
-                className="w-full p-2 border border-gray-300 rounded-lg mb-4 focus:outline-none focus:ring-2 focus:ring-green-600"
-              />
-
-              {otpError && (
-                <p className="text-red-600 text-sm mb-4">{otpError}</p>
-              )}
-
-              <button
-                onClick={verifyOtp}
-                className="bg-green-600 w-full text-white font-semibold py-2 px-4 rounded-lg hover:bg-green-700"
-                aria-label="Verify OTP"
-              >
-                Verify OTP
-              </button>
-            </motion.div>
-          </motion.div>
-        )}
-      </AnimatePresence>
-
-      {/* Mobile Number Popup */}
-      <AnimatePresence>
-        {showMobilePopup && (
-          <motion.div
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            exit={{ opacity: 0 }}
-            className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50"
-            onClick={() => setShowMobilePopup(false)}
-          >
-            <motion.div
-              initial={{ y: 50, opacity: 0 }}
-              animate={{ y: 0, opacity: 1 }}
-              exit={{ y: 50, opacity: 0 }}
-              transition={{ duration: 0.3 }}
-              className="bg-white p-6 rounded-lg shadow-lg w-96"
-              onClick={(e) => e.stopPropagation()}
-            >
-              <div className="flex justify-between items-center mb-4">
-                <h2 className="text-xl font-semibold text-gray-800">Enter your mobile number</h2>
-                <button
-                  className="text-gray-500 hover:text-gray-700"
-                  onClick={() => setShowMobilePopup(false)}
-                  aria-label="Close mobile number popup"
-                >
-                  <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M6 18L18 6M6 6l12 12" />
+                  <svg
+                    className="w-5 h-5"
+                    fill="none"
+                    stroke="currentColor"
+                    viewBox="0 0 24 24"
+                  >
+                    <path
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                      strokeWidth="2"
+                      d="M6 18L18 6M6 6l12 12"
+                    />
                   </svg>
                 </button>
               </div>
 
               <div className="flex items-center mb-4">
-                <span className="text-gray-600 mr-2">+91</span>
                 <input
-                  type="text"
-                  value={mobileNumber}
-                  onChange={(e) => setMobileNumber(e.target.value)}
-                  placeholder="Eg: 9876543210"
+                  type="email"
+                  value={email}
+                  onChange={(e) => setEmail(e.target.value)}
+                  placeholder="Enter your email"
                   className="w-full p-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-green-600"
-                  maxLength="10"
                 />
               </div>
 
               <p className="text-gray-600 text-sm mb-4">
                 By continuing, you agree to the Apna’s{' '}
-                <a href="#" className="text-green-600 hover:underline">Terms of service</a> and{' '}
-                <a href="#" className="text-green-600 hover:underline">Privacy Policy</a>
+                <a href="#" className="text-green-600 hover:underline">
+                  Terms of service
+                </a>{' '}
+                and{' '}
+                <a href="#" className="text-green-600 hover:underline">
+                  Privacy Policy
+                </a>
               </p>
-
-              <button
-                onClick={handleMobileNext}
-                className="bg-gray-200 w-full text-gray-800 font-semibold py-2 px-4 rounded-lg hover:bg-gray-300"
-                aria-label="Next"
-              >
-                NEXT
-              </button>
+<button
+  onClick={handleEmailNext}
+  className="bg-gray-200 hover:text-white hover:bg-green-700 active:text-white active:bg-green-800 w-full text-gray-800 font-semibold py-2 px-4 rounded-lg"
+  aria-label="Submit"
+>
+  Submit
+</button>
             </motion.div>
           </motion.div>
         )}

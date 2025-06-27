@@ -1,6 +1,7 @@
 import React from 'react';
 import { Facebook, Linkedin, Twitter, Instagram, Youtube } from 'lucide-react';
 import WhatsAppQRCode from './WhatsAppQRCode';
+import { NavLink } from 'react-router-dom';
 const Footer = () => {
   return (
     <footer className="bg-gray-900 text-white py-12 px-4">
@@ -16,45 +17,56 @@ const Footer = () => {
             
             {/* Social Media Section */}
             <div className="flex flex-col gap-4">
-              <h3 className="text-lg font-medium">Follow us on social media</h3>
-              <div className="flex gap-4">
-                <a 
-                  href="#" 
-                  className="w-10 h-10 bg-gray-700 hover:bg-gray-600 rounded-full flex items-center justify-center transition-colors duration-200"
-                  aria-label="Facebook"
-                >
-                  <Facebook size={20} />
-                </a>
-                <a 
-                  href="#" 
-                  className="w-10 h-10 bg-gray-700 hover:bg-gray-600 rounded-full flex items-center justify-center transition-colors duration-200"
-                  aria-label="LinkedIn"
-                >
-                  <Linkedin size={20} />
-                </a>
-                <a 
-                  href="#" 
-                  className="w-10 h-10 bg-gray-700 hover:bg-gray-600 rounded-full flex items-center justify-center transition-colors duration-200"
-                  aria-label="Twitter"
-                >
-                  <Twitter size={20} />
-                </a>
-                <a 
-                  href="#" 
-                  className="w-10 h-10 bg-gray-700 hover:bg-gray-600 rounded-full flex items-center justify-center transition-colors duration-200"
-                  aria-label="Instagram"
-                >
-                  <Instagram size={20} />
-                </a>
-                <a 
-                  href="#" 
-                  className="w-10 h-10 bg-gray-700 hover:bg-gray-600 rounded-full flex items-center justify-center transition-colors duration-200"
-                  aria-label="YouTube"
-                >
-                  <Youtube size={20} />
-                </a>
-              </div>
-            </div>
+  <h3 className="text-lg font-medium">Follow us on social media</h3>
+  <div className="flex gap-4">
+    <a 
+      href="https://www.facebook.com" 
+      target="_blank"
+      rel="noopener noreferrer"
+      className="w-10 h-10 bg-gray-700 hover:bg-gray-600 rounded-full flex items-center justify-center transition-colors duration-200"
+      aria-label="Facebook"
+    >
+      <Facebook size={20} />
+    </a>
+    <a 
+      href="https://www.linkedin.com" 
+      target="_blank"
+      rel="noopener noreferrer"
+      className="w-10 h-10 bg-gray-700 hover:bg-gray-600 rounded-full flex items-center justify-center transition-colors duration-200"
+      aria-label="LinkedIn"
+    >
+      <Linkedin size={20} />
+    </a>
+    <a 
+      href="https://twitter.com" 
+      target="_blank"
+      rel="noopener noreferrer"
+      className="w-10 h-10 bg-gray-700 hover:bg-gray-600 rounded-full flex items-center justify-center transition-colors duration-200"
+      aria-label="Twitter"
+    >
+      <Twitter size={20} />
+    </a>
+    <a 
+      href="https://www.instagram.com" 
+      target="_blank"
+      rel="noopener noreferrer"
+      className="w-10 h-10 bg-gray-700 hover:bg-gray-600 rounded-full flex items-center justify-center transition-colors duration-200"
+      aria-label="Instagram"
+    >
+      <Instagram size={20} />
+    </a>
+    <a 
+      href="https://www.youtube.com" 
+      target="_blank"
+      rel="noopener noreferrer"
+      className="w-10 h-10 bg-gray-700 hover:bg-gray-600 rounded-full flex items-center justify-center transition-colors duration-200"
+      aria-label="YouTube"
+    >
+      <Youtube size={20} />
+    </a>
+  </div>
+</div>
+
           </div>
 
           {/* Right Section - App Download */}
@@ -103,10 +115,18 @@ const Footer = () => {
         {/* Bottom Section - Copyright and Links */}
         <div className="mt-8 pt-6 border-t border-gray-700">
           <div className="flex flex-col sm:flex-row justify-between items-center gap-4 text-sm text-gray-400">
-            <div>© 2025 Apna | All rights reserved</div>
+            <div>© 2025 NextHire | All rights reserved</div>
             <div className="flex gap-6">
-              <a href="#" className="hover:text-white transition-colors duration-200">Privacy Policy</a>
-              <a href="#" className="hover:text-white transition-colors duration-200">Terms & Conditions</a>
+         <div className="flex gap-6">
+  <NavLink
+    to="/PrivacyPolicy"
+    className="hover:text-white transition-colors duration-200"
+  >
+    Privacy Policy
+  </NavLink>
+
+ 
+</div>
             </div>
           </div>
         </div>

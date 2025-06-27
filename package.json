@@ -14,6 +14,7 @@
     "@clerk/clerk-react": "^5.31.8",
     "@react-oauth/google": "^0.12.2",
     "axios": "^1.9.0",
+    "firebase": "^11.9.1",
     "framer-motion": "^12.12.2",
     "google-auth-library": "^9.15.1",
     "jwt-decode": "^4.0.0",

@@ -1,6 +1,7 @@
 
 
 import React, { useState } from 'react';
+import { useLocation } from 'react-router-dom';
 import { useNavigate } from 'react-router-dom';
 import axios from 'axios';
 import Navbar from '../component/Navbar';
@@ -19,6 +20,7 @@ const Home = () => {
   const [message, setMessage] = useState('');
 
   const navigate = useNavigate();
+  const { state } = useLocation(); // Access state from Dashboard
 
   const handleSearch = async (e) => {
     e.preventDefault();
@@ -34,15 +36,19 @@ const Home = () => {
     setMessage(`Searching for: ${designation}, ${experience} years, ${location}`);
 
     try {
-      const response = await axios.get('http://localhost:5006/api/jobs/search', {
+      const response = await axios.get(REACT_APP_JOBS_SEARCH_API_FIVE, {
         params: { designation, experience, location },
       });
 
-      const filteredJobs = response.data; // This will already be filtered by the backend
+      const filteredJobs = response.data;
+      console.log('Fetched Jobs in Home:', filteredJobs);
+
+      // Pass both the filtered jobs, search params, and homeJobData (if available) to SearchResults
       navigate('/searchresults', {
         state: {
           filteredJobs,
           searchParams: { designation, experience, location },
+          homeJobData: state?.homeJobData || null, // Pass homeJobData from Dashboard
         },
       });
     } catch (error) {
@@ -178,7 +184,7 @@ const Home = () => {
               <img
                 src="https://apna.co/_next/image?url=https%3A%2F%2Fstorage.googleapis.com%2Fmumbai_apnatime_prod%2Fapna-home%2FHomePageCreative.png&w=3840&q=75"
                 alt="Job search promotional graphic"
-                className="h-[80vh] w-full"
+                className="lg:h-[80vh] h-[50vh] w-full"
               />
             </div>
           </div>

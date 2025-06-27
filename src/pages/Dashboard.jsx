@@ -1,5 +1,4 @@
 
-
   import React, { useState, useEffect } from 'react';
   import { useNavigate, useLocation } from 'react-router-dom';
   import { motion, AnimatePresence } from 'framer-motion';
@@ -41,7 +40,7 @@
     const [slidesToShow, setSlidesToShow] = useState(4);
     const navigate = useNavigate();
     const { state } = useLocation();
-
+const API_URL = import.meta.env.VITE_JOB_API_URL_SHY;
     useEffect(() => {
       if (state?.openForm) {
         if (state.jobType === 'fresher') {
@@ -66,14 +65,14 @@
     const fetchDashboardData = async () => {
       try {
         setIsLoading(true);
-        const response = await axios.get('http://localhost:5006/api/jobs');
+        const response = await axios.get(`${API_URL}`);
         const jobs = response.data.data;
 
         setRecentJobs(jobs.slice(0, 3));
         setTotalJobs(jobs.length);
         setTotalApplications(jobs.reduce((sum, job) => sum + (job.applicants || 0), 0));
 
-        const topCompaniesResponse = await axios.get('http://localhost:5006/api/top-companies');
+        const topCompaniesResponse = await axios.get(`${API_URL}`);
         setTopCompaniesData(topCompaniesResponse.data.data || []);
       } catch (error) {
         console.error('Error fetching dashboard data:', error);
@@ -160,7 +159,7 @@
         };
 
         if (formType === 'topCompanies') {
-          const response = await axios.post('http://localhost:5006/api/top-companies', {
+          const response = await axios.post(REACT_APP_TOP_COMPANIES_API_URL_FOUR, {
             title: submissionData.title,
             company: submissionData.company,
             location: submissionData.location,
@@ -183,7 +182,7 @@
           console.log('Top Company Data Submitted:', response.data);
           setTopCompaniesData((prev) => [...prev, response.data.data]);
         } else {
-          const response = await axios.post('http://localhost:5006/api/jobs', submissionData);
+          const response = await axios.post(`${API_URL}`, submissionData);
           console.log('Job Data Submitted:', response.data);
 
           navigate('/', {
@@ -268,7 +267,7 @@
             <p className="font-semibold text-lg">Admin</p>
           </div>
     <div className="flex-1 mt-3">
-        <button
+        {/* <button
           onClick={() => {
             setActiveButton('home');
             setShowHomeForm(true);
@@ -278,7 +277,7 @@
           } rounded-xl font-medium hover:bg-gray-400 active:bg-gray-300 transition-colors shadow-sm`}
         >
           Home
-        </button>
+        </button> */}
 
         <button
           onClick={() => {
@@ -614,7 +613,7 @@
                     </button>
                     <button
                       type="submit"
-                      className="px-4 py-2 bg-[#1f8268] text-white rounded-lg hover:bg-blue-700 transition-colors"
+                      className="px-4 py-2 bg-gray-200 hover:text-white hover:bg-green-700 active:text-white active:bg-green-800 text-gray-800 font-semibold py-2 px-4 rounded-lg"
                     >
                       Submit
                     </button>
@@ -850,9 +849,9 @@
                     >
                       Cancel
                     </button>
-                    <button
+                  <button
                       type="submit"
-                      className="px-4 py-2 bg-[#1f8268] text-white rounded-lg hover:bg-blue-700 transition-colors"
+                      className="px-4 py-2 bg-gray-200 hover:text-white hover:bg-green-700 active:text-white active:bg-green-800 text-gray-800 font-semibold py-2 px-4 rounded-lg"
                     >
                       Submit
                     </button>
@@ -1089,7 +1088,7 @@
                     </button>
                     <button
                       type="submit"
-                      className="px-4 py-2 bg-[#1f8268] text-white rounded-lg hover:bg-blue-700 transition-colors"
+                      className="px-4 py-2 bg-gray-200 hover:text-white hover:bg-green-700 active:text-white active:bg-green-800 text-gray-800 font-semibold py-2 px-4 rounded-lg"
                     >
                       Submit
                     </button>

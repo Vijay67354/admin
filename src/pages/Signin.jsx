@@ -40,13 +40,14 @@ function Signin({ onClose, onSwitchToSignup }) {
     }
     return true;
   };
-
+const GOOGLE_LOGIN_API = import.meta.env.VITE_GOOGLE_LOGIN_API;
+const API_URL_LOGIN = import.meta.env.VITE_JOB_API_URL_LOGIN;
   const handleSubmit = async (e) => {
     e.preventDefault(); // Prevent default form submission
     if (!validateForm()) return;
 
     try {
-      const response = await axios.post('http://localhost:5006/api/login', {
+      const response = await axios.post(API_URL_LOGIN, {
         email: formData.email,
         password: formData.password,
       });
@@ -83,7 +84,7 @@ function Signin({ onClose, onSwitchToSignup }) {
 
       // Optionally, send user data to your backend for verification or storage
       try {
-        const response = await axios.post('http://localhost:5006/api/google-login', {
+        const response = await axios.post(GOOGLE_LOGIN_API, {
           email: userData.email,
           googleId: userData.googleId,
           name: userData.name,
