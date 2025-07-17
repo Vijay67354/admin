@@ -37,15 +37,15 @@ const App = () => {
   };
 
   return (
-    <UserProvider>
-      <Router>
-        <Routes>
-          <Route path="/" element={<Home />} />
-          <Route path="/candidatelogin" element={<CandidateLogin onLoginSuccess={handleLoginSuccess} />} />
-          <Route path="/dashboard" element={<Dashboard />} />
-          <Route path="/whatsappqrcode" element={<WhatsAppQRCode />} />
-          <Route path="/signup" element={<Signup />} />
-          <Route path="/addjob" element={<AddJob />} />
+      <UserProvider>
+        <Router>
+          <Routes>
+            <Route path="/" element={<Home />} />
+            <Route path="/candidatelogin" element={<CandidateLogin onLoginSuccess={handleLoginSuccess} />} />
+            <Route path="/dashboard" element={<Dashboard />} />
+            <Route path="/whatsappqrcode" element={<WhatsAppQRCode />} />
+            <Route path="/signup" element={<Signup />} />
+            <Route path="/addjob" element={<AddJob />} />
           <Route path="/resetpassword" element={<ResetPassword />} />
           <Route path="/managejobs" element={<ManageJobs />} />
            <Route path="/jobopeningdetail" element={<JobOpeningDetail />} />

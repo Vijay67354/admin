@@ -1,4 +1,5 @@
 
+
 import React, { useState, useEffect, useMemo } from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
@@ -34,11 +35,12 @@ const JobDetails = () => {
   const [showEmailPopup, setShowEmailPopup] = useState(false);
   const [email, setEmail] = useState('');
   const [currentJobId, setCurrentJobId] = useState(null);
-  const [currentJobDetails, setCurrentJobDetails] = useState(null); // Added to store job details
+  const [currentJobDetails, setCurrentJobDetails] = useState(null);
+  const [showDropdown, setShowDropdown] = useState(null); // State for dropdown toggle
 
   useEffect(() => {
     let isMounted = true;
-const API_URL = import.meta.env.VITE_JOB_API_URL_SHY;
+    const API_URL = import.meta.env.VITE_JOB_API_URL_SHY;
     const fetchJobs = async () => {
       if (!isMounted) return;
       setIsLoading(true);
@@ -211,6 +213,20 @@ const API_URL = import.meta.env.VITE_JOB_API_URL_SHY;
     sendEmail(currentJobDetails);
   };
 
+  const handleDeleteJob = async (jobId) => {
+    try {
+      await axios.delete(`${import.meta.env.VITE_JOB_API_URL_SHY}/${jobId}`, {
+        headers: { Authorization: `Bearer ${localStorage.getItem('token') || ''}` },
+      });
+      setJobs((prevJobs) => prevJobs.filter((job) => job._id !== jobId));
+      setShowDropdown(null); // Close dropdown after deletion
+      toast.success('Job deleted successfully!');
+    } catch (err) {
+      console.error('Error deleting job:', err);
+      toast.error('Failed to delete job. Please try again.');
+    }
+  };
+
   if (isLoading) {
     return (
       <div className="flex items-center justify-center min-h-screen">
@@ -247,8 +263,8 @@ const API_URL = import.meta.env.VITE_JOB_API_URL_SHY;
           {jobType === 'fresher'
             ? 'Fresher Jobs'
             : jobType === 'workFromHome'
-            ? 'Work from Home Jobs'
-            : 'Latest Jobs'}
+              ? 'Work from Home Jobs'
+              : 'Latest Jobs'}
         </h1>
       </div>
 
@@ -384,7 +400,7 @@ const API_URL = import.meta.env.VITE_JOB_API_URL_SHY;
                 {currentJobs.map((job, index) => (
                   <div
                     key={job._id || index}
-                    className="mt-4 p-3 bg-white shadow-md rounded-lg cursor-pointer hover:bg-gray-50"
+                    className="mt-4 p-3 bg-white shadow-md rounded-lg cursor-pointer hover:bg-gray-50 relative"
                     onClick={() => setSelectedJob(job)}
                   >
                     <div className="flex items-center justify-between">
@@ -392,11 +408,35 @@ const API_URL = import.meta.env.VITE_JOB_API_URL_SHY;
                         <h3 className="text-xl font-semibold text-black">{job.title || 'N/A'}</h3>
                         <p className="text-gray-600">{job.company || 'N/A'}</p>
                       </div>
-                      <img
-                        src={job.img || 'https://via.placeholder.com/64'}
-                        alt={`${job.company || 'Company'} logo`}
-                        className="w-16 h-16 object-contain rounded-lg"
-                      />
+                      <div className="relative flex">
+                        <img
+                          src={job.img || 'https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcTq1BENAtycJcv6BcJiip84QiusWIuSo1WjENJ0aVQQixXuCizZF9drDRE&s'}
+                          alt={`${job.company || 'Company'} logo`}
+                          className="w-16 h-16 object-contain rounded-lg"
+                        />
+                        <button
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            setShowDropdown(job._id === showDropdown ? null : job._id);
+                          }}
+                          className="text-gray-500 hover:text-gray-700 ml-2"
+                        >
+                          <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 5v.01M12 12v.01M12 19v.01" />
+                          </svg>
+                        </button>
+                        <div className={`absolute right-0 mt-2 w-48 bg-white border rounded-lg shadow-lg ${job._id === showDropdown ? '' : 'hidden'}`}>
+                          <button
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              handleDeleteJob(job._id);
+                            }}
+                            className="w-full text-left px-4 py-2 text-red-600 hover:bg-red-100"
+                          >
+                            Delete
+                          </button>
+                        </div>
+                      </div>
                     </div>
 
                     <div className="mt-2 flex items-center gap-2 text-sm text-gray-600">
@@ -455,11 +495,10 @@ const API_URL = import.meta.env.VITE_JOB_API_URL_SHY;
                   <button
                     onClick={() => handlePageChange(currentPage - 1)}
                     disabled={currentPage === 1}
-                    className={`px-3 py-1 rounded-md ${
-                      currentPage === 1
-                        ? 'bg-gray-200 text-gray-400 cursor-not-allowed'
-                        : 'bg-blue-600 text-white hover:bg-blue-700'
-                    }`}
+                    className={`px-3 py-1 rounded-md ${currentPage === 1
+                      ? 'bg-gray-200 text-gray-400 cursor-not-allowed'
+                      : 'bg-blue-600 text-white hover:bg-blue-700'
+                      }`}
                     aria-label="Previous page"
                   >
                     Previous
@@ -478,11 +517,10 @@ const API_URL = import.meta.env.VITE_JOB_API_URL_SHY;
                       <button
                         key={page}
                         onClick={() => handlePageChange(page)}
-                        className={`px-3 py-1 rounded-md ${
-                          currentPage === page
-                            ? 'bg-blue-600 text-white'
-                            : 'bg-gray-200 text-gray-700 hover:bg-gray-300'
-                        }`}
+                        className={`px-3 py-1 rounded-md ${currentPage === page
+                          ? 'bg-blue-600 text-white'
+                          : 'bg-gray-200 text-gray-700 hover:bg-gray-300'
+                          }`}
                         aria-label={`Page ${page}`}
                       >
                         {page}
@@ -493,11 +531,10 @@ const API_URL = import.meta.env.VITE_JOB_API_URL_SHY;
                   <button
                     onClick={() => handlePageChange(currentPage + 1)}
                     disabled={currentPage === totalPages}
-                    className={`px-3 py-1 rounded-md ${
-                      currentPage === totalPages
-                        ? 'bg-gray-200 text-gray-400 cursor-not-allowed'
-                        : 'bg-blue-600 text-white hover:bg-blue-700'
-                    }`}
+                    className={`px-3 py-1 rounded-md ${currentPage === totalPages
+                      ? 'bg-gray-200 text-gray-400 cursor-not-allowed'
+                      : 'bg-blue-600 text-white hover:bg-blue-700'
+                      }`}
                     aria-label="Next page"
                   >
                     Next
@@ -789,13 +826,13 @@ const API_URL = import.meta.env.VITE_JOB_API_URL_SHY;
                   Privacy Policy
                 </a>
               </p>
-<button
-  onClick={handleEmailNext}
-  className="bg-gray-200 hover:text-white hover:bg-green-700 active:text-white active:bg-green-800 w-full text-gray-800 font-semibold py-2 px-4 rounded-lg"
-  aria-label="Submit"
->
-  Submit
-</button>
+              <button
+                onClick={handleEmailNext}
+                className="bg-gray-200 hover:text-white hover:bg-green-700 active:text-white active:bg-green-800 w-full text-gray-800 font-semibold py-2 px-4 rounded-lg"
+                aria-label="Submit"
+              >
+                Submit
+              </button>
             </motion.div>
           </motion.div>
         )}

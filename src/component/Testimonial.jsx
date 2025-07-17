@@ -120,7 +120,7 @@ const Testimonial = () => {
       </div>
 
     </div>
- <div className='flex h-[650px] justify-center mx-auto mt-11 mb-1 pt-7 pb-7'>
+ <div className='flex h-[590px] justify-center mx-auto mt-11 mb-1 pt-7 pb-7'>
       <img src='/images/apna.png'  className='w-full  object-cover'/>
     </div>
 </div>

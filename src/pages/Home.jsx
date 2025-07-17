@@ -36,7 +36,7 @@ const Home = () => {
     setMessage(`Searching for: ${designation}, ${experience} years, ${location}`);
 
     try {
-      const response = await axios.get(REACT_APP_JOBS_SEARCH_API_FIVE, {
+      const response = await axios.get('http://localhost:5006/api/jobs/search', {
         params: { designation, experience, location },
       });
 
@@ -184,7 +184,7 @@ const Home = () => {
               <img
                 src="https://apna.co/_next/image?url=https%3A%2F%2Fstorage.googleapis.com%2Fmumbai_apnatime_prod%2Fapna-home%2FHomePageCreative.png&w=3840&q=75"
                 alt="Job search promotional graphic"
-                className="lg:h-[80vh] h-[50vh] w-full"
+                className="h-[80vh] w-full"
               />
             </div>
           </div>
