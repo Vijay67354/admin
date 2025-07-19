@@ -113,7 +113,7 @@ const JobOpeningDetail = () => {
       setShowEmailPopup(false);
 
       await axios.post(
-        `http://localhost:5006/api/jobs/${jobDetails._id}/apply`,
+      `${import.meta.env.VITE_BACKEND_BASE_URL}/api/jobs/${jobDetails._id}/apply`,
         {},
         { headers: { Authorization: `Bearer ${localStorage.getItem('token') || ''}` } }
       );

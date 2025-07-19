@@ -345,13 +345,13 @@ function CandidateLogin() {
                         Enter 6-digit OTP
                       </label>
                       <div className="relative">
-                        <Lock className="absolute left-3 top-3 h-5 w-5 text-gray-400" />
+                        <Lock className="absolute left-3 top-6 h-5 w-5 text-gray-400" />
                         <input
                           type="text"
                           value={otp}
                           onChange={(e) => setOtp(e.target.value.replace(/\D/g, '').slice(0, 6))}
                           placeholder="Enter OTP"
-                          className="w-full pl-10 pr-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-teal-500 focus:border-teal-500 outline-none transition-colors text-center text-2xl tracking-widest"
+                          className="w-full pl-10 pr-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-teal-500 focus:border-teal-500 outline-none transition-colors text-center text-xl tracking-widest"
                           maxLength="6"
                         />
                       </div>
