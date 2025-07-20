@@ -17,7 +17,7 @@ const ManageJobs = () => {
     const fetchJobs = async () => {
       try {
         setIsLoading(true);
-       const response = await fetch(`${process.env.REACT_APP_API_BASE_URL_SEVEN}/api/jobs/${user._id}`);
+       const response = await fetch(`${VITE_APP_API_BASE_URL}/api/jobs/${user._id}`);
         if (!response.ok) throw new Error('Failed to fetch jobs');
         const data = await response.json();
         setJobs(data);

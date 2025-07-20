@@ -18,7 +18,7 @@ const CategoryJobs = () => {
     const fetchJobs = async () => {
       try {
         setIsLoading(true);
-        const response = await fetch('http://localhost:5006/api/jobs');
+        const response = await fetch(`${import.meta.env.VITE_BACKEND_BASE_URL}/api/jobs`);
         if (!response.ok) throw new Error('Failed to fetch jobs');
         const data = await response.json();
 

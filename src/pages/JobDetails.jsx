@@ -40,7 +40,7 @@ const JobDetails = () => {
 
   useEffect(() => {
     let isMounted = true;
-    const API_URL = import.meta.env.VITE_JOB_API_URL_SHY;
+    const VITE_JOB_API_URL = import.meta.env.VITE_JOB_API_URL;
     const fetchJobs = async () => {
       if (!isMounted) return;
       setIsLoading(true);
@@ -56,7 +56,7 @@ const JobDetails = () => {
           level: jobType === 'fresher' ? 'Junior' : undefined,
         };
 
-        const response = await axios.get(`${API_URL}`, {
+        const response = await axios.get(`${VITE_JOB_API_URL}`, {
           params,
         });
 
@@ -161,12 +161,12 @@ const JobDetails = () => {
         },
       };
 
-      await axios.post('http://localhost:5006/api/send-email', emailData);
+      await axios.post(`${import.meta.env.VITE_BACKEND_BASE_URL}/api/send-email`, emailData);
       toast.success('Email sent successfully! You can now apply.');
       setShowEmailPopup(false);
 
       await axios.post(
-        `http://localhost:5006/api/jobs/${jobDetails._id}/apply`,
+      `${import.meta.env.VITE_BACKEND_BASE_URL}/api/jobs/${jobDetails._id}/apply`,
         {},
         { headers: { Authorization: `Bearer ${localStorage.getItem('token') || ''}` } }
       );
@@ -215,7 +215,7 @@ const JobDetails = () => {
 
   const handleDeleteJob = async (jobId) => {
     try {
-      await axios.delete(`${import.meta.env.VITE_JOB_API_URL_SHY}/${jobId}`, {
+      await axios.delete(`${import.meta.env.VITE_JOB_API_URL}/${jobId}`, {
         headers: { Authorization: `Bearer ${localStorage.getItem('token') || ''}` },
       });
       setJobs((prevJobs) => prevJobs.filter((job) => job._id !== jobId));

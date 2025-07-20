@@ -108,12 +108,12 @@ const JobOpeningDetail = () => {
         },
       };
 
-      await axios.post(REACT_APP_SEND_EMAIL, emailData);
+      await axios.post(VITE_SEND_EMAIL_API, emailData);
       toast.success('Email sent successfully! You can now apply.');
       setShowEmailPopup(false);
 
       await axios.post(
-        `http://localhost:5006/api/jobs/${jobDetails._id}/apply`,
+      `${import.meta.env.VITE_BACKEND_BASE_URL}/api/jobs/${jobDetails._id}/apply`,
         {},
         { headers: { Authorization: `Bearer ${localStorage.getItem('token') || ''}` } }
       );

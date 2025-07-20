@@ -17,13 +17,13 @@ const ViewApplications = () => {
     const fetchApplications = async () => {
       try {
         setIsLoading(true);
-        const jobsResponse = await fetch(`http://localhost:5006/api/jobs/${user._id}`);
+       const jobsResponse = await fetch(`${import.meta.env.VITE_BACKEND_BASE_URL}/api/jobs/${user._id}`);
         if (!jobsResponse.ok) throw new Error('Failed to fetch jobs');
         const jobs = await jobsResponse.json();
 
         const allApplications = [];
         for (const job of jobs) {
-          const response = await fetch(`http://localhost:5006/api/applications/${job._id}`);
+         const response = await fetch(`${import.meta.env.VITE_BACKEND_BASE_URL}/api/applications/${job._id}`);
           if (response.ok) {
             const data = await response.json();
             allApplications.push(...data);

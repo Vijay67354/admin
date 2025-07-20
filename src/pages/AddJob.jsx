@@ -70,7 +70,7 @@ const handleSubmit = async (e) => {
 
   try {
     // const token = localStorage.getItem('authToken');
- const response = await axios.get(REACT_APP_JOB_API_URL_SHY, {
+ const response = await axios.get(VITE_JOB_API_URL, {
       ...jobData,
       postedBy: user._id,
     }

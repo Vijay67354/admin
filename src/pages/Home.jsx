@@ -36,7 +36,7 @@ const Home = () => {
     setMessage(`Searching for: ${designation}, ${experience} years, ${location}`);
 
     try {
-      const response = await axios.get('http://localhost:5006/api/jobs/search', {
+     const response = await axios.get(`${import.meta.env.VITE_BACKEND_BASE_URL}/api/jobs/search`, {
         params: { designation, experience, location },
       });
 
