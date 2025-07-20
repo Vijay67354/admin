@@ -47,13 +47,13 @@ function Signup({ onClose, onSwitchToLogin }) {
     }
     return true;
   };
-const SIGNUP_URL = import.meta.env.VITE_SIGNUP_API_URL;
+const VITE_JOB_API_URL_SIGNUP = import.meta.env.VITE_JOB_API_URL_SIGNUP;
   const handleSubmit = async (e) => {
     e.preventDefault();
     if (!validateForm()) return;
 
     try {
-      const response = await axios.post(SIGNUP_URL, {
+      const response = await axios.post(VITE_JOB_API_URL_SIGNUP, {
         email: formData.email,
         password: formData.password,
         name: formData.name,
