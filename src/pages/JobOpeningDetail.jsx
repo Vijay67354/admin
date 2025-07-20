@@ -108,7 +108,7 @@ const JobOpeningDetail = () => {
         },
       };
 
-      await axios.post(REACT_APP_SEND_EMAIL, emailData);
+      await axios.post(VITE_SEND_EMAIL_API, emailData);
       toast.success('Email sent successfully! You can now apply.');
       setShowEmailPopup(false);
 

@@ -23,7 +23,7 @@ const JobList = () => {
       try {
         setLoading(true);
         setError('');
-        const response = await axios.get(REACT_APP_JOB_API_URL_SHY);
+        const response = await axios.get(VITE_JOB_API_URL);
         setJobs(response.data || []);
       } catch (err) {
         console.error('Error fetching jobs:', err);
