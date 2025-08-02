@@ -250,7 +250,7 @@ function Signin({ onClose, onSwitchToSignup }) {
     if (!validateForm()) return;
 
     try {
-      const response = await axios.post(VITE_API_URL_GOOGLE_LOGIN || 'http://localhost:5006/api/login', {
+      const response = await axios.post(VITE_API_URL_GOOGLE_LOGIN || 'https://adminsite-1-l247.onrender.com/api/login', {
         email: formData.email,
         password: formData.password,
       });

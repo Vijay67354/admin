@@ -96,7 +96,7 @@ const handleSubmit = async () => {
   formData.append('resume', uploadedFile);
 
   try {
-    const response = await fetch('http://localhost:5006/api/upload-resume', {
+    const response = await fetch('https://adminsite-1-l247.onrender.com/api/upload-resume', {
       method: 'POST',
       body: formData,
     });

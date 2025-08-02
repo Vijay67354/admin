@@ -3,7 +3,7 @@
   "private": true,
   "version": "0.0.0",
   "type": "module",
-  "proxy": "http://localhost:5006",
+  "proxy": "https://adminsite-1-l247.onrender.com",
   "scripts": {
     "dev": "vite",
     "build": "vite build",
